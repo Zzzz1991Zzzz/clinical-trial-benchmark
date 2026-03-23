@@ -264,10 +264,28 @@ const insertBenchmark = db.prepare(`
   )
 `);
 
+const updateBenchmarkSeed = db.prepare(`
+  UPDATE benchmarks
+  SET
+    display_name = @display_name,
+    benchmark_cycle_label = @benchmark_cycle_label,
+    state = @state,
+    submission_open_at = @submission_open_at,
+    submission_close_at = @submission_close_at,
+    result_publish_at = @result_publish_at,
+    download_file_path = @download_file_path,
+    manifest_file_path = @manifest_file_path,
+    has_ground_truth = @has_ground_truth,
+    description = @description
+  WHERE slug = @slug
+`);
+
 for (const benchmark of benchmarkSeeds) {
   const existing = db.prepare('SELECT id FROM benchmarks WHERE slug = ?').get(benchmark.slug);
   if (!existing) {
     insertBenchmark.run(benchmark);
+  } else {
+    updateBenchmarkSeed.run(benchmark);
   }
 }
 
