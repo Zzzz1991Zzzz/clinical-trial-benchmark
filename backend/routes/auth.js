@@ -26,7 +26,15 @@ function sanitizeUser(user) {
   };
 }
 
-function createVerification(user) {
+function normalizeUsername(value = '') {
+  return value.trim().toLowerCase();
+}
+
+function normalizeEmail(value = '') {
+  return value.trim().toLowerCase();
+}
+
+async function createVerification(user) {
   db.prepare('UPDATE email_verifications SET used_at = CURRENT_TIMESTAMP WHERE user_id = ? AND used_at IS NULL')
     .run(user.id);
 
@@ -37,7 +45,7 @@ function createVerification(user) {
     VALUES (?, ?, 'signup', ?)
   `).run(user.id, code, expiresAt);
 
-  sendVerificationCode({
+  await sendVerificationCode({
     email: user.email,
     code,
     username: user.username
@@ -54,10 +62,14 @@ router.post(
     windowMs: 15 * 60 * 1000,
     message: 'Too many signup attempts. Please try again later.'
   }),
-  (req, res) => {
+  async (req, res) => {
     const { username, password, email, full_name, affiliation } = req.body;
+    const normalizedUsername = normalizeUsername(username);
+    const normalizedEmail = normalizeEmail(email);
+    const normalizedFullName = full_name?.trim();
+    const normalizedAffiliation = affiliation?.trim();
 
-    if (!username || !password || !email || !full_name || !affiliation) {
+    if (!normalizedUsername || !password || !normalizedEmail || !normalizedFullName || !normalizedAffiliation) {
       return res.status(400).json({
         success: false,
         error_code: 'INVALID_INPUT',
@@ -73,7 +85,11 @@ router.post(
       });
     }
 
-    const existing = db.prepare('SELECT id FROM users WHERE username = ? OR email = ?').get(username, email);
+    const existing = db.prepare(`
+      SELECT id
+      FROM users
+      WHERE lower(trim(username)) = ? OR lower(trim(email)) = ?
+    `).get(normalizedUsername, normalizedEmail);
     if (existing) {
       return res.status(409).json({
         success: false,
@@ -86,14 +102,23 @@ router.post(
     const result = db.prepare(`
       INSERT INTO users (username, password, email, full_name, affiliation, role, email_verified)
       VALUES (?, ?, ?, ?, ?, 'user', 0)
-    `).run(username, hashedPassword, email, full_name, affiliation);
+    `).run(normalizedUsername, hashedPassword, normalizedEmail, normalizedFullName, normalizedAffiliation);
 
     const user = db.prepare(`
       SELECT id, username, email, full_name, affiliation, role, email_verified, created_at
       FROM users WHERE id = ?
     `).get(result.lastInsertRowid);
 
-    createVerification(user);
+    try {
+      await createVerification(user);
+    } catch (error) {
+      db.prepare('DELETE FROM users WHERE id = ?').run(user.id);
+      return res.status(502).json({
+        success: false,
+        error_code: 'EMAIL_DELIVERY_FAILED',
+        message: 'Failed to send verification email. Please try again later.'
+      });
+    }
     attachSession(res, user);
     logAuthEvent({ userId: user.id, eventType: 'signup', success: true, ipAddress: getIpAddress(req) });
     logAudit({ userId: user.id, action: 'signup', entityType: 'user', entityId: String(user.id) });
@@ -116,7 +141,9 @@ router.post(
   }),
   (req, res) => {
     const { username, password } = req.body;
-    if (!username || !password) {
+    const loginIdentifier = username?.trim().toLowerCase();
+
+    if (!loginIdentifier || !password) {
       return res.status(400).json({
         success: false,
         error_code: 'INVALID_INPUT',
@@ -127,8 +154,8 @@ router.post(
     const user = db.prepare(`
       SELECT id, username, email, password, full_name, affiliation, role, email_verified, created_at
       FROM users
-      WHERE username = ? OR email = ?
-    `).get(username, username);
+      WHERE lower(trim(username)) = ? OR lower(trim(email)) = ?
+    `).get(loginIdentifier, loginIdentifier);
 
     if (!user || !bcrypt.compareSync(password, user.password)) {
       logAuthEvent({
@@ -136,7 +163,7 @@ router.post(
         eventType: 'signin',
         success: false,
         ipAddress: getIpAddress(req),
-        metadata: { username }
+        metadata: { username: loginIdentifier }
       });
       return res.status(401).json({
         success: false,
@@ -215,23 +242,42 @@ router.post('/verify-email', authenticateToken, (req, res) => {
   });
 });
 
-router.post('/resend-verification', authenticateToken, (req, res) => {
-  if (req.user.email_verified) {
-    return res.json({
+router.post(
+  '/resend-verification',
+  authenticateToken,
+  rateLimit({
+    key: 'resend_verification',
+    limit: 5,
+    windowMs: 15 * 60 * 1000,
+    message: 'Too many resend attempts. Please try again later.'
+  }),
+  async (req, res) => {
+    if (req.user.email_verified) {
+      return res.json({
+        success: true,
+        message: 'Email is already verified.'
+      });
+    }
+
+    try {
+      await createVerification(req.user);
+    } catch (error) {
+      return res.status(502).json({
+        success: false,
+        error_code: 'EMAIL_DELIVERY_FAILED',
+        message: 'Failed to send verification email. Please try again later.'
+      });
+    }
+
+    logAuthEvent({ userId: req.user.id, eventType: 'resend_verification', success: true, ipAddress: getIpAddress(req) });
+    logAudit({ userId: req.user.id, action: 'resend_verification', entityType: 'user', entityId: String(req.user.id) });
+
+    res.json({
       success: true,
-      message: 'Email is already verified.'
+      message: 'A new verification code has been sent.'
     });
   }
-
-  createVerification(req.user);
-  logAuthEvent({ userId: req.user.id, eventType: 'resend_verification', success: true, ipAddress: getIpAddress(req) });
-  logAudit({ userId: req.user.id, action: 'resend_verification', entityType: 'user', entityId: String(req.user.id) });
-
-  res.json({
-    success: true,
-    message: 'A new verification code has been generated and logged in the development console.'
-  });
-});
+);
 
 router.get('/me', authenticateToken, (req, res) => {
   res.json({

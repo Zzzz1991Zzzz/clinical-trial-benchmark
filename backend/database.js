@@ -165,10 +165,16 @@ function initializeSchema() {
   db.exec(`
     UPDATE users
     SET
-      full_name = COALESCE(NULLIF(full_name, ''), username),
-      email = COALESCE(NULLIF(email, ''), username || '@example.local'),
-      affiliation = COALESCE(NULLIF(affiliation, ''), 'Independent Researcher'),
+      username = lower(trim(username)),
+      full_name = COALESCE(NULLIF(trim(full_name), ''), username),
+      email = lower(trim(COALESCE(NULLIF(email, ''), username || '@example.local'))),
+      affiliation = COALESCE(NULLIF(trim(affiliation), ''), 'Independent Researcher'),
       updated_at = COALESCE(updated_at, created_at, CURRENT_TIMESTAMP)
+  `);
+
+  db.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_normalized ON users(lower(trim(username)));
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_normalized ON users(lower(trim(email)));
   `);
 
   ensureColumn('submissions', 'benchmark_id', 'INTEGER');
