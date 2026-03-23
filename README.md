@@ -116,6 +116,12 @@ Current backend environment variables:
 - `ADMIN_USERNAME=admin`
 - `ADMIN_PASSWORD=replace_me`
 - `ADMIN_EMAIL=admin@example.com`
+- `SMTP_HOST=smtp.example.com`
+- `SMTP_PORT=587`
+- `SMTP_SECURE=false`
+- `SMTP_USER=your_smtp_username`
+- `SMTP_PASS=your_smtp_password`
+- `MAIL_FROM=no-reply@example.com`
 
 ## Available Pages
 
@@ -197,7 +203,7 @@ npm run build
 
 - The frontend proxies `/api/*` requests to the backend at `http://localhost:3001`.
 - If the frontend shows `Request failed` or Vite reports `ECONNREFUSED 127.0.0.1:3001`, the backend is not running.
-- In development, email verification codes are printed in the backend terminal instead of being sent by email.
+- If SMTP variables are not configured, email verification codes are printed in the backend terminal instead of being sent by email.
 - Benchmark availability is controlled by backend benchmark state and timestamps.
 - If there is no currently open benchmark, submissions will be rejected by the backend.
 
