@@ -89,6 +89,12 @@ async function createSubmission({ user, payload }) {
 
   const summary = await validateSubmissionPayload({ benchmark, payload });
 
+  // Keep only the latest submission per user per benchmark.
+  await db.run(`
+    DELETE FROM submissions
+    WHERE user_id = ? AND benchmark_id = ?
+  `, [user.id, benchmark.id]);
+
   const result = await db.insert(`
     INSERT INTO submissions (
       user_id, benchmark_id, model_name, benchmark_version, raw_payload,
