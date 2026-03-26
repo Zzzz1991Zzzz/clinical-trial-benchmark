@@ -132,6 +132,7 @@ async function listUserSubmissions(userId) {
     LEFT JOIN submission_evaluations e ON e.submission_id = s.id
     WHERE s.user_id = ?
     ORDER BY s.submitted_at DESC
+    LIMIT 50
   `, [userId]);
 
   return rows.map((row) => ({

@@ -34,6 +34,16 @@ function normalizeEmail(value = '') {
   return value.trim().toLowerCase();
 }
 
+async function getLatestVerification(userId) {
+  return db.get(`
+    SELECT id, created_at
+    FROM email_verifications
+    WHERE user_id = ?
+    ORDER BY created_at DESC
+    LIMIT 1
+  `, [userId]);
+}
+
 async function createVerification(user) {
   await db.run('UPDATE email_verifications SET used_at = CURRENT_TIMESTAMP WHERE user_id = ? AND used_at IS NULL', [user.id]);
 
@@ -255,6 +265,15 @@ router.post(
       return res.json({
         success: true,
         message: 'Email is already verified.'
+      });
+    }
+
+    const latestVerification = await getLatestVerification(req.user.id);
+    if (latestVerification && (Date.now() - Date.parse(latestVerification.created_at)) < 5 * 60 * 1000) {
+      return res.status(429).json({
+        success: false,
+        error_code: 'VERIFICATION_COOLDOWN',
+        message: 'You can request a new verification code once every 5 minutes.'
       });
     }
 
