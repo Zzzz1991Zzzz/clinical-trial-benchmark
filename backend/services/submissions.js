@@ -89,12 +89,6 @@ async function createSubmission({ user, payload }) {
 
   const summary = await validateSubmissionPayload({ benchmark, payload });
 
-  // Keep only the latest submission per user per benchmark.
-  await db.run(`
-    DELETE FROM submissions
-    WHERE user_id = ? AND benchmark_id = ?
-  `, [user.id, benchmark.id]);
-
   const result = await db.insert(`
     INSERT INTO submissions (
       user_id, benchmark_id, model_name, benchmark_version, raw_payload,
@@ -164,6 +158,15 @@ async function listAllSubmissions() {
     JOIN users u ON u.id = s.user_id
     JOIN benchmarks b ON b.id = s.benchmark_id
     LEFT JOIN submission_evaluations e ON e.submission_id = s.id
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM submissions newer
+      WHERE newer.user_id = s.user_id
+        AND (
+          newer.submitted_at > s.submitted_at
+          OR (newer.submitted_at = s.submitted_at AND newer.id > s.id)
+        )
+    )
     ORDER BY s.submitted_at DESC
   `);
 
