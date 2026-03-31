@@ -286,6 +286,87 @@ tbody tr:hover {
   font-size: 0.9rem;
 }
 
+.historical-table-shell {
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(22, 50, 79, 0.03), rgba(255, 255, 255, 0.96));
+}
+
+.historical-results-table {
+  min-width: 920px;
+  font-size: 1rem;
+  table-layout: fixed;
+}
+
+.historical-col-model {
+  width: 26%;
+}
+
+.historical-col-metric {
+  width: 12.333%;
+}
+
+.historical-results-table thead {
+  background: #f7f3ea;
+  color: var(--ink);
+}
+
+.historical-results-table thead tr:first-child th {
+  border-bottom: 2px solid rgba(19, 34, 56, 0.22);
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: center;
+  padding-top: 18px;
+  padding-bottom: 10px;
+}
+
+.historical-results-table thead tr:last-child th {
+  text-align: center;
+  font-size: 0.92rem;
+  color: var(--muted);
+  padding-top: 10px;
+  padding-bottom: 14px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.historical-results-table thead tr:first-child th:first-child {
+  text-align: left !important;
+  width: 26%;
+  border-bottom: none !important;
+}
+
+.historical-section-row td {
+  background: #fbf8f1;
+  color: var(--ink);
+  font-size: 1.05rem;
+  padding-top: 18px;
+  padding-bottom: 10px;
+  border-top: 1px solid rgba(19, 34, 56, 0.14);
+  border-bottom: none;
+}
+
+.historical-data-row:hover {
+  background: rgba(180, 83, 9, 0.04);
+}
+
+.historical-model-cell {
+  width: 26%;
+  font-size: 1.02rem;
+  padding-right: 12px;
+}
+
+.historical-model-cell strong {
+  font-weight: 600;
+}
+
+.historical-metric-cell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .open-benchmark-panel h2 {
   margin: 8px 0;
   font-size: 2rem;

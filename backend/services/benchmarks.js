@@ -74,6 +74,7 @@ async function getLeaderboard(benchmarkIdOrSlug) {
   const benchmark = await getBenchmarkRecord(benchmarkIdOrSlug);
   if (!benchmark) return null;
 
+  const useHistoricalReportOrder = ['25-02', '25-09'].includes(benchmark.slug);
   const rows = await db.all(`
     SELECT display_username, model_name, average_f1_macro, average_cross_entropy, cost,
       arm2arm_superiority_f1, arm2arm_superiority_cross_entropy,
@@ -82,13 +83,22 @@ async function getLeaderboard(benchmarkIdOrSlug) {
       published_at
     FROM submission_evaluations
     WHERE benchmark_id = ? AND is_public = 1 AND status = 'published'
-    ORDER BY average_f1_macro DESC, average_cross_entropy ASC, created_at ASC
+    ORDER BY ${useHistoricalReportOrder ? 'created_at ASC' : 'average_f1_macro DESC, average_cross_entropy ASC, created_at ASC'}
   `, [benchmark.id]);
 
   return rows.map((row, index) => ({
     rank: index + 1,
     username: row.display_username,
     model: row.model_name,
+    is_section_header:
+      row.average_f1_macro == null &&
+      row.average_cross_entropy == null &&
+      row.arm2arm_superiority_f1 == null &&
+      row.arm2arm_superiority_cross_entropy == null &&
+      row.arm2arm_noninferiority_f1 == null &&
+      row.arm2arm_noninferiority_cross_entropy == null &&
+      row.endpoint_prediction_f1 == null &&
+      row.endpoint_prediction_cross_entropy == null,
     average_f1_macro: row.average_f1_macro,
     average_cross_entropy: row.average_cross_entropy,
     cost: row.cost,

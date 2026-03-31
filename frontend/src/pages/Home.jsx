@@ -3,55 +3,57 @@ import { Link } from 'react-router-dom'
 import FaqAccordion from '../components/FaqAccordion'
 import { api } from '../utils/api'
 
-function formatMetric(value, digits = 3) {
+function formatMetric(value, digits = 2) {
   return typeof value === 'number' ? value.toFixed(digits) : '-'
 }
 
 const METRIC_GROUPS = [
   {
-    key: 'summary',
-    label: 'Summary',
+    key: 'endpoint',
+    label: 'Endpoint',
     columns: [
-      { key: 'average_f1_macro', label: 'F1 Macro' },
-      { key: 'average_cross_entropy', label: 'Cross Entropy' },
-      { key: 'cost', label: 'Cost', digits: 2 },
+      { key: 'endpoint_prediction_f1', label: 'Macro-F1' },
+      { key: 'endpoint_prediction_cross_entropy', label: 'W-Acc' },
     ],
   },
   {
-    key: 'arm2arm_superiority',
-    label: 'Arm2Arm Superiority Comparison',
+    key: 'superiority',
+    label: 'Superiority',
     columns: [
-      { key: 'arm2arm_superiority_f1', label: 'F1 Macro' },
-      { key: 'arm2arm_superiority_cross_entropy', label: 'Cross Entropy' },
+      { key: 'arm2arm_superiority_f1', label: 'Macro-F1' },
+      { key: 'arm2arm_superiority_cross_entropy', label: 'W-Acc' },
     ],
   },
   {
-    key: 'arm2arm_noninferiority',
-    label: 'Arm2Arm Non-Inferiority Comparison',
+    key: 'comparative_effect',
+    label: 'Comparative Effect',
     columns: [
-      { key: 'arm2arm_noninferiority_f1', label: 'F1 Macro' },
-      { key: 'arm2arm_noninferiority_cross_entropy', label: 'Cross Entropy' },
-    ],
-  },
-  {
-    key: 'endpoint_prediction',
-    label: 'Endpoint Prediction',
-    columns: [
-      { key: 'endpoint_prediction_f1', label: 'F1 Macro' },
-      { key: 'endpoint_prediction_cross_entropy', label: 'Cross Entropy' },
+      { key: 'arm2arm_noninferiority_f1', label: 'Macro-F1' },
+      { key: 'arm2arm_noninferiority_cross_entropy', label: 'W-Acc' },
     ],
   },
 ]
 
 function PublishedBenchmarkTable({ benchmark, rows }) {
   const useUsernameIdentity = Number(benchmark.id) > 2
+  const showHistoricalLayout = ['25-02', '25-09'].includes(benchmark.slug)
 
   return (
-    <div className="table-container">
-      <table>
+    <div className={`table-container ${showHistoricalLayout ? 'historical-table-shell' : ''}`}>
+      <table className={showHistoricalLayout ? 'historical-results-table' : ''}>
+        {showHistoricalLayout && (
+          <colgroup>
+            <col className="historical-col-model" />
+            <col className="historical-col-metric" />
+            <col className="historical-col-metric" />
+            <col className="historical-col-metric" />
+            <col className="historical-col-metric" />
+            <col className="historical-col-metric" />
+            <col className="historical-col-metric" />
+          </colgroup>
+        )}
         <thead>
           <tr>
-            <th rowSpan="2">Rank</th>
             <th rowSpan="2">{useUsernameIdentity ? 'Username' : 'Model'}</th>
             {METRIC_GROUPS.map((group) => (
               <th key={group.key} colSpan={group.columns.length}>
@@ -68,20 +70,38 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={`${row.username}-${row.model}`}>
-              <td>{row.rank}</td>
-              <td>
-                <strong>{useUsernameIdentity ? row.username : row.model}</strong>
-                {!useUsernameIdentity && <div className="table-subtext">{row.username}</div>}
-              </td>
-              {METRIC_GROUPS.flatMap((group) =>
-                group.columns.map((column) => (
-                  <td key={`${row.rank}-${column.key}`}>{formatMetric(row[column.key], column.digits ?? 3)}</td>
-                ))
-              )}
-            </tr>
-          ))}
+          {rows.map((row, index) => {
+            if (row.is_section_header) {
+              return (
+                <tr key={`section-${benchmark.slug}-${index}`} className="historical-section-row">
+                  <td colSpan={1 + METRIC_GROUPS.reduce((total, group) => total + group.columns.length, 0)}>
+                    <em>{row.model}</em>
+                  </td>
+                </tr>
+              )
+            }
+
+            return (
+              <tr key={`${benchmark.slug}-${index}`} className={showHistoricalLayout ? 'historical-data-row' : ''}>
+                <td className={showHistoricalLayout ? 'historical-model-cell' : ''}>
+                  <strong>{useUsernameIdentity ? row.username : row.model}</strong>
+                  {!useUsernameIdentity && !showHistoricalLayout && row.username && (
+                    <div className="table-subtext">{row.username}</div>
+                  )}
+                </td>
+                {METRIC_GROUPS.flatMap((group) =>
+                  group.columns.map((column) => (
+                    <td
+                      key={`${benchmark.slug}-${index}-${column.key}`}
+                      className={showHistoricalLayout ? 'historical-metric-cell' : ''}
+                    >
+                      {formatMetric(row[column.key], column.digits ?? 2)}
+                    </td>
+                  ))
+                )}
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
@@ -223,7 +243,7 @@ function Home({ user }) {
                 <h2>{activeBenchmark.display_name}</h2>
               </div>
               <p className="panel-description">
-                Historical benchmark results are sorted by Average F1 Macro descending and remain view-only.
+                Historical benchmark results remain view-only and follow the published benchmark report layout.
               </p>
             </div>
             <PublishedBenchmarkTable benchmark={activeBenchmark} rows={leaderboards[activeBenchmark.id]?.leaderboard || []} />
