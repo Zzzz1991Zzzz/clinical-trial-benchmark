@@ -124,7 +124,7 @@ function Submit({ user }) {
               <pre className="code-block">{`{
   "total_cost": 123.45
 }`}</pre>
-              <p>`problem_id` must be an integer, and `answer` must be `A`, `B`, or `C`.</p>
+              <p>"problem_id" must be an integer, and "answer" must be A, B, or C.</p>
             </div>
           </div>
 
