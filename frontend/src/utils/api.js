@@ -49,4 +49,9 @@ export const api = {
   getStats: () => request('/admin/stats'),
   getUsers: () => request('/admin/users'),
   getAdminSubmissions: () => request('/admin/submissions'),
+  getAdminAnnouncement: () => request('/admin/content/announcement'),
+  updateAdminAnnouncement: (items) => request('/admin/content/announcement', {
+    method: 'PUT',
+    body: JSON.stringify({ items }),
+  }),
 }

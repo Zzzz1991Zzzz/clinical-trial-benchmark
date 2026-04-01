@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../database');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 const { listAllSubmissions } = require('../services/submissions');
+const { getHomeContent, updateAnnouncement } = require('../services/content');
 
 const router = express.Router();
 
@@ -32,6 +33,17 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
 router.get('/submissions', authenticateToken, requireAdmin, async (req, res) => {
   const submissions = await listAllSubmissions();
   res.json({ success: true, submissions });
+});
+
+router.get('/content/announcement', authenticateToken, requireAdmin, async (req, res) => {
+  const content = await getHomeContent();
+  res.json({ success: true, announcement: content.announcement });
+});
+
+router.put('/content/announcement', authenticateToken, requireAdmin, async (req, res) => {
+  const items = Array.isArray(req.body?.items) ? req.body.items : [];
+  const announcement = await updateAnnouncement(items);
+  res.json({ success: true, announcement });
 });
 
 module.exports = router;

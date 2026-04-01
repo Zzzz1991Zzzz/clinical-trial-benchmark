@@ -1,10 +1,34 @@
 module.exports = {
+  announcement: {
+    items: [
+      {
+        date: 'March 31',
+        parts: [
+          { type: 'text', value: 'We added two new benchmark releases and published the ' },
+          { type: 'link', label: 'Winter 2025 Leaderboard', href: '#' },
+          { type: 'text', value: ' and ' },
+          { type: 'link', label: 'Summer 2025 Leaderboard', href: '#' },
+          { type: 'text', value: '.' }
+        ]
+      },
+      {
+        date: 'March 31',
+        parts: [
+          { type: 'text', value: 'The ' },
+          { type: 'link', label: 'Summer Open 2026', href: '#' },
+          { type: 'text', value: ' benchmark is now live and accepting submissions.' }
+        ]
+      }
+    ]
+  },
   introduction: {
-    title: 'What is Clinical Trial Arena?',
+    title: 'About CT Open',
     paragraphs: [
-      'Clinical Trial Arena is a benchmark platform for comparing how well models solve structured clinical-trial reasoning tasks. Each benchmark cycle publishes a canonical question set, a submission window, and a standardized leaderboard so teams can compare results on the same problems under the same reporting rules.',
-      'Benchmark evaluation on this site means your submission is validated against the official benchmark manifest, stored with benchmark-version metadata, and later compared using consistent metrics such as Average F1 Macro and Cross Entropy. This keeps benchmark releases reproducible across cycles instead of mixing results from incompatible task definitions.',
-      'Leaderboards and submission history make model comparisons more useful because they preserve fair comparisons across teams, model versions, and benchmark releases. Some benchmark tabs publish results only after ground-truth answers become available, so open benchmarks focus on download and submission flow first and leaderboard publication later.'
+      'Scientists have long sought to accurately predict outcomes of real-world events before they happen. Can AI systems do so more reliably? We study this question through clinical trial outcome prediction, a high-stakes open challenge even for domain experts, with immediate consequences for patients, pharmaceutical companies, and investors.',
+      'We introduce CT Open, an open-access, live platform that would run four challenge-cycles every year. Anyone can submit predictions for clinical trial outcomes in each challenge-cycle. In the next cycle, CT Open evaluates those submissions on trials whose outcomes were not yet public at the submission deadline but became public afterwards.',
+      'Determining if a trial\'s outcome is public on the internet before a certain date is surprisingly difficult. Outcomes posted on official registries may lag behind years, while the first mention may appear in obscure news articles. To address this, we propose a novel, fully automated pipeline that uses iterative LLM-powered web search to identify the earliest mention of trial outcomes.',
+      'We validate the pipeline’s quality and accuracy by human expert\'s annotations. Since CT Open’s pipeline ensures that every evaluated trial had no publicly reported outcome when the prediction was made, it allows participants to use any methodology and any data source.',
+      'In this paper, we release a large-scale training set and two time-stamped test benchmarks, Winter25 and Summer25. We present promising results showing that retrieval-augmented and agentic LLMs outperform baseline methods. We believe CT Open can serve as a central hub for advancing AI research on forecasting real-world outcomes before they occur, while also informing biomedical research and improving clinical trial design.'
     ],
     links: [
       { label: 'Code', href: '#' },

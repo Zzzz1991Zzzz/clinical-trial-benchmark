@@ -13,19 +13,15 @@ async function validateSubmissionPayload({ benchmark, payload }) {
     throw validationError('INVALID_SCHEMA', 'Submission payload must be a JSON object.');
   }
 
-  if (!payload.benchmark_version) {
-    throw validationError('INVALID_SCHEMA', 'benchmark_version is required.');
-  }
-
   if (!Array.isArray(payload.answers)) {
     throw validationError('INVALID_SCHEMA', 'answers must be a list.');
   }
 
-  if (typeof payload.total_cost !== 'number' || Number.isNaN(payload.total_cost)) {
-    throw validationError('INVALID_SCHEMA', 'total_cost must be numeric.');
+  if (payload.total_cost !== undefined && (typeof payload.total_cost !== 'number' || Number.isNaN(payload.total_cost))) {
+    throw validationError('INVALID_SCHEMA', 'total_cost must be numeric when provided.');
   }
 
-  if (payload.total_cost < 0) {
+  if (payload.total_cost !== undefined && payload.total_cost < 0) {
     throw validationError('INVALID_SEMANTIC', 'total_cost must be greater than or equal to 0.');
   }
 
@@ -88,6 +84,8 @@ async function createSubmission({ user, payload }) {
   }
 
   const summary = await validateSubmissionPayload({ benchmark, payload });
+  const normalizedTotalCost = typeof payload.total_cost === 'number' ? payload.total_cost : 0;
+  const benchmarkVersion = payload.benchmark_version || benchmark.display_name;
 
   const result = await db.insert(`
     INSERT INTO submissions (
@@ -98,9 +96,9 @@ async function createSubmission({ user, payload }) {
     user.id,
     benchmark.id,
     user.username,
-    payload.benchmark_version,
+    benchmarkVersion,
     JSON.stringify(payload),
-    payload.total_cost,
+    normalizedTotalCost,
     'pending_results',
     JSON.stringify(summary)
   ]);
@@ -109,7 +107,7 @@ async function createSubmission({ user, payload }) {
     INSERT INTO submission_evaluations (
       submission_id, benchmark_id, display_username, model_name, cost, status, is_public
     ) VALUES (?, ?, ?, ?, ?, 'pending_results', 0)
-  `, [result.lastInsertRowid, benchmark.id, user.username, user.username, payload.total_cost]);
+  `, [result.lastInsertRowid, benchmark.id, user.username, user.username, normalizedTotalCost]);
 
   return {
     id: result.lastInsertRowid,

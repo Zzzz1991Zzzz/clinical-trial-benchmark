@@ -61,16 +61,18 @@ select {
 .header {
   position: sticky;
   top: 0;
+  height: 80;
   z-index: 10;
   backdrop-filter: blur(14px);
   background: rgba(19, 34, 56, 0.86);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
 }
 
 .header-inner {
   width: min(1240px, calc(100vw - 32px));
   margin: 0 auto;
-  min-height: 72px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -80,21 +82,17 @@ select {
 .header-logo {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
   text-decoration: none;
   color: white;
   font-weight: 700;
-  letter-spacing: 0.03em;
+  line-height: 0;
 }
 
-.header-logo-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #0f766e, #b45309);
-  font-size: 0.85rem;
+.header-logo-image {
+  display: block;
+  height: 180px;
+  width: auto;
+  max-width: min(860px, 60vw);
 }
 
 .header-nav {
@@ -135,9 +133,7 @@ select {
 
 .hero-panel {
   padding: 32px;
-  display: grid;
-  grid-template-columns: 1.7fr 1fr;
-  gap: 24px;
+  display: block;
   overflow: hidden;
 }
 
@@ -152,9 +148,31 @@ select {
   font-size: 1.05rem;
 }
 
-.hero-status {
+.notice-board {
   display: grid;
-  gap: 12px;
+  gap: 10px;
+  padding: 16px 18px;
+  border-left: 3px solid rgba(37, 99, 235, 0.58);
+  border-radius: 12px;
+  background: rgba(219, 234, 254, 0.64);
+}
+
+.notice-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #1d4ed8;
+  font-size: 0.96rem;
+  line-height: 1.45;
+}
+
+.notice-line a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.notice-icon {
+  line-height: 1.2;
 }
 
 .status-card,
@@ -219,6 +237,10 @@ select {
   text-transform: capitalize;
 }
 
+.benchmark-tab small:empty {
+  display: none;
+}
+
 .benchmark-tab.active {
   background: linear-gradient(135deg, rgba(15, 118, 110, 0.18), rgba(180, 83, 9, 0.18));
   border-color: rgba(15, 118, 110, 0.45);
@@ -227,6 +249,10 @@ select {
 .benchmark-panel,
 .card {
   padding: 24px;
+}
+
+.benchmark-panel {
+  overflow: hidden;
 }
 
 .panel-header,
@@ -286,6 +312,46 @@ tbody tr:hover {
   font-size: 0.9rem;
 }
 
+.schedule-table-shell {
+  background: rgba(255, 250, 243, 0.94);
+}
+
+.schedule-table {
+  min-width: 700px;
+}
+
+.schedule-table thead {
+  background: #f7f3ea;
+  color: var(--ink);
+}
+
+.schedule-table thead th {
+  border-bottom: 2px solid rgba(19, 34, 56, 0.2);
+  font-weight: 700;
+  padding: 11px 14px;
+}
+
+.schedule-table td {
+  padding: 11px 14px;
+}
+
+.schedule-countdown {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.schedule-status-live {
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.schedule-status-upcoming {
+  color: var(--muted);
+  font-weight: 400;
+}
+
 .historical-table-shell {
   padding: 10px;
   background: linear-gradient(180deg, rgba(22, 50, 79, 0.03), rgba(255, 255, 255, 0.96));
@@ -298,11 +364,11 @@ tbody tr:hover {
 }
 
 .historical-col-model {
-  width: 26%;
+  width: 23%;
 }
 
 .historical-col-metric {
-  width: 12.333%;
+  width: 12.833%;
 }
 
 .historical-results-table thead {
@@ -312,19 +378,19 @@ tbody tr:hover {
 
 .historical-results-table thead tr:first-child th {
   border-bottom: 2px solid rgba(19, 34, 56, 0.22);
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 700;
   text-align: center;
-  padding-top: 18px;
-  padding-bottom: 10px;
+  padding-top: 14px;
+  padding-bottom: 8px;
 }
 
 .historical-results-table thead tr:last-child th {
   text-align: center;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   color: var(--muted);
-  padding-top: 10px;
-  padding-bottom: 14px;
+  padding-top: 8px;
+  padding-bottom: 10px;
   padding-left: 0;
   padding-right: 0;
 }
@@ -338,9 +404,9 @@ tbody tr:hover {
 .historical-section-row td {
   background: #fbf8f1;
   color: var(--ink);
-  font-size: 1.05rem;
-  padding-top: 18px;
-  padding-bottom: 10px;
+  font-size: 1rem;
+  padding-top: 14px;
+  padding-bottom: 8px;
   border-top: 1px solid rgba(19, 34, 56, 0.14);
   border-bottom: none;
 }
@@ -350,9 +416,9 @@ tbody tr:hover {
 }
 
 .historical-model-cell {
-  width: 26%;
-  font-size: 1.02rem;
-  padding-right: 12px;
+  width: 23%;
+  font-size: 0.98rem;
+  padding: 10px 12px;
 }
 
 .historical-model-cell strong {
@@ -363,13 +429,23 @@ tbody tr:hover {
   text-align: center;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  padding-top: 10px;
+  padding-bottom: 10px;
   padding-left: 0;
   padding-right: 0;
 }
 
 .open-benchmark-panel h2 {
-  margin: 8px 0;
+  margin: 12px 0 18px;
   font-size: 2rem;
+}
+
+.open-benchmark-panel > p {
+  margin: 0 0 24px;
+}
+
+.open-benchmark-panel > :last-child {
+  margin-bottom: 0;
 }
 
 .cta-row,
@@ -377,7 +453,8 @@ tbody tr:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 26px;
+  margin-bottom: 26px;
 }
 
 .btn {
@@ -459,7 +536,7 @@ tbody tr:hover {
 .form-group {
   display: grid;
   gap: 8px;
-  margin-bottom: 16px;
+  margin-bottom: 32px;
 }
 
 .form-group label {
@@ -502,6 +579,23 @@ tbody tr:hover {
 .prose-card p,
 .code-block {
   margin: 0 0 14px;
+}
+
+.page-shell > .page-subtitle {
+  margin-bottom: 10px;
+}
+
+.card form > .callout,
+.card form > .alert {
+  margin-bottom: 28px;
+}
+
+.card form > .form-group:first-of-type {
+  margin-top: 8px;
+}
+
+.card form .button-row {
+  margin-top: 30px;
 }
 
 .prose-card p:last-child {

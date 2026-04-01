@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import logo from '../assets/ct-open-logo.png'
 
 function Header({ user, onLogout }) {
   const location = useLocation()
@@ -9,8 +10,7 @@ function Header({ user, onLogout }) {
     <header className="header">
       <div className="header-inner">
         <Link to="/" className="header-logo">
-          <span className="header-logo-mark">CTA</span>
-          <span>Clinical Trial Arena</span>
+          <img src={logo} alt="CT Open Challenge" className="header-logo-image" />
         </Link>
 
         <nav className="header-nav">

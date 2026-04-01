@@ -164,6 +164,13 @@ function initializeSqliteSchema() {
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
     );
+
+    CREATE TABLE IF NOT EXISTS site_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content_key TEXT UNIQUE NOT NULL,
+      json_value TEXT NOT NULL,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   ensureSqliteColumn('users', 'full_name', "TEXT DEFAULT ''");
@@ -297,6 +304,13 @@ async function initializePostgresSchema() {
       metadata TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS site_content (
+      id SERIAL PRIMARY KEY,
+      content_key TEXT UNIQUE NOT NULL,
+      json_value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
   await pool.query(`
@@ -334,7 +348,7 @@ const benchmarkSeeds = [
   },
   {
     slug: '26-06',
-    display_name: '26/06 Benchmark',
+    display_name: 'Summer 2026 Open',
     benchmark_cycle_label: '26/06',
     state: 'open_for_submission',
     submission_open_at: '2026-01-01T00:00:00Z',
@@ -348,6 +362,99 @@ const benchmarkSeeds = [
 ];
 
 const evaluationSeedRows = [
+  {
+    benchmark_slug: '25-02',
+    display_username: 'Large Language Models',
+    model_name: 'Large Language Models'
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'Gemini-3.1-Pro Preview',
+    model_name: 'Gemini-3.1-Pro Preview',
+    endpoint_prediction_f1: 78.42,
+    endpoint_prediction_cross_entropy: 87.59,
+    arm2arm_superiority_f1: 68.05,
+    arm2arm_superiority_cross_entropy: 71.52,
+    arm2arm_noninferiority_f1: 52.02,
+    arm2arm_noninferiority_cross_entropy: 51.99
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'O3-mini',
+    model_name: 'O3-mini',
+    endpoint_prediction_f1: 69.30,
+    endpoint_prediction_cross_entropy: 68.02,
+    arm2arm_superiority_f1: 68.70,
+    arm2arm_superiority_cross_entropy: 68.50,
+    arm2arm_noninferiority_f1: 50.54,
+    arm2arm_noninferiority_cross_entropy: 50.86
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'O3-mini + RAG',
+    model_name: 'O3-mini + RAG',
+    endpoint_prediction_f1: 76.88,
+    endpoint_prediction_cross_entropy: 73.48,
+    arm2arm_superiority_f1: 69.21,
+    arm2arm_superiority_cross_entropy: 69.18,
+    arm2arm_noninferiority_f1: 56.81,
+    arm2arm_noninferiority_cross_entropy: 57.14
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'O3-mini + Agent',
+    model_name: 'O3-mini + Agent',
+    endpoint_prediction_f1: 64.83,
+    endpoint_prediction_cross_entropy: 66.67,
+    arm2arm_superiority_f1: 67.46,
+    arm2arm_superiority_cross_entropy: 68.06,
+    arm2arm_noninferiority_f1: 54.74,
+    arm2arm_noninferiority_cross_entropy: 55.72
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'GPT-5',
+    model_name: 'GPT-5',
+    endpoint_prediction_f1: 65.29,
+    endpoint_prediction_cross_entropy: 77.63,
+    arm2arm_superiority_f1: 66.17,
+    arm2arm_superiority_cross_entropy: 71.20,
+    arm2arm_noninferiority_f1: 54.25,
+    arm2arm_noninferiority_cross_entropy: 54.70
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'GPT-5 + RAG',
+    model_name: 'GPT-5 + RAG',
+    endpoint_prediction_f1: 67.98,
+    endpoint_prediction_cross_entropy: 78.03,
+    arm2arm_superiority_f1: 67.54,
+    arm2arm_superiority_cross_entropy: 71.86,
+    arm2arm_noninferiority_f1: 56.96,
+    arm2arm_noninferiority_cross_entropy: 57.49
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'Claude Opus 4.5',
+    model_name: 'Claude Opus 4.5',
+    endpoint_prediction_f1: 70.17,
+    endpoint_prediction_cross_entropy: 80.23,
+    arm2arm_superiority_f1: 62.31,
+    arm2arm_superiority_cross_entropy: 68.91,
+    arm2arm_noninferiority_f1: 55.52,
+    arm2arm_noninferiority_cross_entropy: 54.83
+  },
+  {
+    benchmark_slug: '25-02',
+    display_username: 'Claude Opus 4.5 + RAG',
+    model_name: 'Claude Opus 4.5 + RAG',
+    endpoint_prediction_f1: 70.36,
+    endpoint_prediction_cross_entropy: 81.85,
+    arm2arm_superiority_f1: 63.43,
+    arm2arm_superiority_cross_entropy: 69.62,
+    arm2arm_noninferiority_f1: 56.00,
+    arm2arm_noninferiority_cross_entropy: 55.19
+  },
   {
     benchmark_slug: '25-02',
     display_username: 'Traditional Baselines',
@@ -409,97 +516,97 @@ const evaluationSeedRows = [
     arm2arm_noninferiority_cross_entropy: 50.00
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'Large Language Models',
     model_name: 'Large Language Models'
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'Gemini-3.1-Pro Preview',
     model_name: 'Gemini-3.1-Pro Preview',
-    endpoint_prediction_f1: 78.42,
-    endpoint_prediction_cross_entropy: 87.59,
-    arm2arm_superiority_f1: 68.05,
-    arm2arm_superiority_cross_entropy: 71.52,
-    arm2arm_noninferiority_f1: 52.02,
-    arm2arm_noninferiority_cross_entropy: 51.99
+    endpoint_prediction_f1: 68.02,
+    endpoint_prediction_cross_entropy: 71.24,
+    arm2arm_superiority_f1: 78.00,
+    arm2arm_superiority_cross_entropy: 80.56,
+    arm2arm_noninferiority_f1: 76.71,
+    arm2arm_noninferiority_cross_entropy: 71.86
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'O3-mini',
     model_name: 'O3-mini',
-    endpoint_prediction_f1: 69.30,
-    endpoint_prediction_cross_entropy: 68.02,
-    arm2arm_superiority_f1: 68.70,
-    arm2arm_superiority_cross_entropy: 68.50,
-    arm2arm_noninferiority_f1: 50.54,
-    arm2arm_noninferiority_cross_entropy: 50.86
+    endpoint_prediction_f1: 59.83,
+    endpoint_prediction_cross_entropy: 59.46,
+    arm2arm_superiority_f1: 72.48,
+    arm2arm_superiority_cross_entropy: 71.93,
+    arm2arm_noninferiority_f1: 54.94,
+    arm2arm_noninferiority_cross_entropy: 59.78
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'O3-mini + RAG',
-    model_name: '+ RAG',
-    endpoint_prediction_f1: 76.88,
-    endpoint_prediction_cross_entropy: 73.48,
-    arm2arm_superiority_f1: 69.21,
-    arm2arm_superiority_cross_entropy: 69.18,
-    arm2arm_noninferiority_f1: 56.81,
-    arm2arm_noninferiority_cross_entropy: 57.14
+    model_name: 'O3-mini + RAG',
+    endpoint_prediction_f1: 59.07,
+    endpoint_prediction_cross_entropy: 58.98,
+    arm2arm_superiority_f1: 73.15,
+    arm2arm_superiority_cross_entropy: 72.94,
+    arm2arm_noninferiority_f1: 56.75,
+    arm2arm_noninferiority_cross_entropy: 60.87
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'O3-mini + Agent',
-    model_name: '+ Agent',
-    endpoint_prediction_f1: 64.83,
-    endpoint_prediction_cross_entropy: 66.67,
-    arm2arm_superiority_f1: 67.46,
-    arm2arm_superiority_cross_entropy: 68.06,
-    arm2arm_noninferiority_f1: 54.74,
-    arm2arm_noninferiority_cross_entropy: 55.72
+    model_name: 'O3-mini + Agent',
+    endpoint_prediction_f1: 61.75,
+    endpoint_prediction_cross_entropy: 62.84,
+    arm2arm_superiority_f1: 73.33,
+    arm2arm_superiority_cross_entropy: 73.96,
+    arm2arm_noninferiority_f1: 69.81,
+    arm2arm_noninferiority_cross_entropy: 92.75
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'GPT-5',
     model_name: 'GPT-5',
-    endpoint_prediction_f1: 65.29,
-    endpoint_prediction_cross_entropy: 77.63,
-    arm2arm_superiority_f1: 66.17,
-    arm2arm_superiority_cross_entropy: 71.20,
-    arm2arm_noninferiority_f1: 54.25,
-    arm2arm_noninferiority_cross_entropy: 54.70
+    endpoint_prediction_f1: 51.54,
+    endpoint_prediction_cross_entropy: 58.24,
+    arm2arm_superiority_f1: 70.23,
+    arm2arm_superiority_cross_entropy: 73.71,
+    arm2arm_noninferiority_f1: 64.81,
+    arm2arm_noninferiority_cross_entropy: 64.49
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'GPT-5 + RAG',
-    model_name: '+ RAG',
-    endpoint_prediction_f1: 67.98,
-    endpoint_prediction_cross_entropy: 78.03,
-    arm2arm_superiority_f1: 67.54,
-    arm2arm_superiority_cross_entropy: 71.86,
-    arm2arm_noninferiority_f1: 56.96,
-    arm2arm_noninferiority_cross_entropy: 57.49
+    model_name: 'GPT-5 + RAG',
+    endpoint_prediction_f1: 50.13,
+    endpoint_prediction_cross_entropy: 55.55,
+    arm2arm_superiority_f1: 70.18,
+    arm2arm_superiority_cross_entropy: 73.78,
+    arm2arm_noninferiority_f1: 68.95,
+    arm2arm_noninferiority_cross_entropy: 70.05
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'Claude Opus 4.5',
     model_name: 'Claude Opus 4.5',
-    endpoint_prediction_f1: 70.17,
-    endpoint_prediction_cross_entropy: 80.23,
-    arm2arm_superiority_f1: 62.31,
-    arm2arm_superiority_cross_entropy: 68.91,
-    arm2arm_noninferiority_f1: 55.52,
-    arm2arm_noninferiority_cross_entropy: 54.83
+    endpoint_prediction_f1: 53.71,
+    endpoint_prediction_cross_entropy: 57.86,
+    arm2arm_superiority_f1: 68.76,
+    arm2arm_superiority_cross_entropy: 73.68,
+    arm2arm_noninferiority_f1: 48.24,
+    arm2arm_noninferiority_cross_entropy: 49.64
   },
   {
-    benchmark_slug: '25-02',
+    benchmark_slug: '25-09',
     display_username: 'Claude Opus 4.5 + RAG',
-    model_name: '+ RAG',
-    endpoint_prediction_f1: 70.36,
-    endpoint_prediction_cross_entropy: 81.85,
-    arm2arm_superiority_f1: 63.43,
-    arm2arm_superiority_cross_entropy: 69.62,
-    arm2arm_noninferiority_f1: 56.00,
-    arm2arm_noninferiority_cross_entropy: 55.19
+    model_name: 'Claude Opus 4.5 + RAG',
+    endpoint_prediction_f1: 58.69,
+    endpoint_prediction_cross_entropy: 62.72,
+    arm2arm_superiority_f1: 69.59,
+    arm2arm_superiority_cross_entropy: 74.10,
+    arm2arm_noninferiority_f1: 48.42,
+    arm2arm_noninferiority_cross_entropy: 50.00
   },
   {
     benchmark_slug: '25-09',
@@ -560,99 +667,6 @@ const evaluationSeedRows = [
     arm2arm_superiority_cross_entropy: 63.89,
     arm2arm_noninferiority_f1: 46.15,
     arm2arm_noninferiority_cross_entropy: 45.65
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'Large Language Models',
-    model_name: 'Large Language Models'
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'Gemini-3.1-Pro Preview',
-    model_name: 'Gemini-3.1-Pro Preview',
-    endpoint_prediction_f1: 68.02,
-    endpoint_prediction_cross_entropy: 71.24,
-    arm2arm_superiority_f1: 78.00,
-    arm2arm_superiority_cross_entropy: 80.56,
-    arm2arm_noninferiority_f1: 76.71,
-    arm2arm_noninferiority_cross_entropy: 71.86
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'O3-mini',
-    model_name: 'O3-mini',
-    endpoint_prediction_f1: 59.83,
-    endpoint_prediction_cross_entropy: 59.46,
-    arm2arm_superiority_f1: 72.48,
-    arm2arm_superiority_cross_entropy: 71.93,
-    arm2arm_noninferiority_f1: 54.94,
-    arm2arm_noninferiority_cross_entropy: 59.78
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'O3-mini + RAG',
-    model_name: '+ RAG',
-    endpoint_prediction_f1: 59.07,
-    endpoint_prediction_cross_entropy: 58.98,
-    arm2arm_superiority_f1: 73.15,
-    arm2arm_superiority_cross_entropy: 72.94,
-    arm2arm_noninferiority_f1: 56.75,
-    arm2arm_noninferiority_cross_entropy: 60.87
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'O3-mini + Agent',
-    model_name: '+ Agent',
-    endpoint_prediction_f1: 61.75,
-    endpoint_prediction_cross_entropy: 62.84,
-    arm2arm_superiority_f1: 73.33,
-    arm2arm_superiority_cross_entropy: 73.96,
-    arm2arm_noninferiority_f1: 69.81,
-    arm2arm_noninferiority_cross_entropy: 92.75
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'GPT-5',
-    model_name: 'GPT-5',
-    endpoint_prediction_f1: 51.54,
-    endpoint_prediction_cross_entropy: 58.24,
-    arm2arm_superiority_f1: 70.23,
-    arm2arm_superiority_cross_entropy: 73.71,
-    arm2arm_noninferiority_f1: 64.81,
-    arm2arm_noninferiority_cross_entropy: 64.49
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'GPT-5 + RAG',
-    model_name: '+ RAG',
-    endpoint_prediction_f1: 50.13,
-    endpoint_prediction_cross_entropy: 55.55,
-    arm2arm_superiority_f1: 70.18,
-    arm2arm_superiority_cross_entropy: 73.78,
-    arm2arm_noninferiority_f1: 68.95,
-    arm2arm_noninferiority_cross_entropy: 70.05
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'Claude Opus 4.5',
-    model_name: 'Claude Opus 4.5',
-    endpoint_prediction_f1: 53.71,
-    endpoint_prediction_cross_entropy: 57.86,
-    arm2arm_superiority_f1: 68.76,
-    arm2arm_superiority_cross_entropy: 73.68,
-    arm2arm_noninferiority_f1: 48.24,
-    arm2arm_noninferiority_cross_entropy: 49.64
-  },
-  {
-    benchmark_slug: '25-09',
-    display_username: 'Claude Opus 4.5 + RAG',
-    model_name: '+ RAG',
-    endpoint_prediction_f1: 58.69,
-    endpoint_prediction_cross_entropy: 62.72,
-    arm2arm_superiority_f1: 69.59,
-    arm2arm_superiority_cross_entropy: 74.10,
-    arm2arm_noninferiority_f1: 48.42,
-    arm2arm_noninferiority_cross_entropy: 50.00
   }
 ];
 

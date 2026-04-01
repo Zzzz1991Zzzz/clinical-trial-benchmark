@@ -30,12 +30,10 @@ function About() {
       <div className="card top-gap">
         <h2 className="section-title">Submission JSON Example</h2>
         <pre className="code-block">{`{
-  "benchmark_version": "26/06 Benchmark",
   "answers": [
     { "problem_id": 201, "answer": "A" },
     { "problem_id": 202, "answer": "B" }
-  ],
-  "total_cost": 123.45
+  ]
 }`}</pre>
       </div>
 

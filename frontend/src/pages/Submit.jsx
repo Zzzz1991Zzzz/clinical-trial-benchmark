@@ -2,22 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../utils/api'
 
-const EXAMPLE_JSON = `{
-  "benchmark_version": "26/06 Benchmark",
-  "answers": [
-    { "problem_id": 201, "answer": "A" },
-    { "problem_id": 202, "answer": "B" },
-    { "problem_id": 203, "answer": "C" },
-    { "problem_id": 204, "answer": "A" },
-    { "problem_id": 205, "answer": "B" },
-    { "problem_id": 206, "answer": "C" }
-  ],
-  "total_cost": 123.45
-}`
-
 function Submit({ user }) {
   const [benchmarks, setBenchmarks] = useState([])
-  const [jsonText, setJsonText] = useState(EXAMPLE_JSON)
+  const [jsonText, setJsonText] = useState('')
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -53,6 +40,11 @@ function Submit({ user }) {
 
     if (!user.email_verified) {
       setError('Verify your email before submitting.')
+      return
+    }
+
+    if (!jsonText.trim()) {
+      setError('Please upload a JSON file before submitting.')
       return
     }
 
@@ -118,16 +110,27 @@ function Submit({ user }) {
           </div>
 
           <div className="form-group">
-            <label>Or paste submission JSON</label>
-            <textarea value={jsonText} onChange={(e) => setJsonText(e.target.value)} required />
+            <label>JSON Formatting Rules</label>
+            <div className="card prose-card">
+              <p>Upload a UTF-8 encoded JSON file. Direct pasting is not supported here.</p>
+              <p>Required fields:</p>
+              <pre className="code-block">{`{
+  "answers": [
+    { "problem_id": 201, "answer": "A" },
+    { "problem_id": 202, "answer": "B" }
+  ]
+}`}</pre>
+              <p>Optional fields:</p>
+              <pre className="code-block">{`{
+  "total_cost": 123.45
+}`}</pre>
+              <p>`problem_id` must be an integer, and `answer` must be `A`, `B`, or `C`.</p>
+            </div>
           </div>
 
           <div className="button-row">
             <button type="submit" className="btn btn-primary" disabled={loading || !selectedBenchmark}>
               {loading ? 'Submitting...' : 'Submit JSON'}
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={() => setJsonText(EXAMPLE_JSON)}>
-              Load Example
             </button>
           </div>
         </form>

@@ -3,8 +3,58 @@ import { Link } from 'react-router-dom'
 import FaqAccordion from '../components/FaqAccordion'
 import { api } from '../utils/api'
 
+const SCHEDULE_ROWS = [
+  {
+    challenge: 'Summer Open 2026',
+    window: 'June–September',
+    deadline: 'May 31, 2026',
+    deadlineDate: '2026-05-31T23:59:59Z',
+    release: 'September 7, 2026',
+    releaseDate: '2026-09-07T23:59:59Z',
+    status: 'Accepting Submissions',
+  },
+  {
+    challenge: 'Fall Open 2026',
+    window: 'September–December',
+    deadline: 'August 31, 2026',
+    deadlineDate: '2026-08-31T23:59:59Z',
+    release: 'December 7, 2026',
+    releaseDate: '2026-12-07T23:59:59Z',
+    status: 'Upcoming',
+  },
+  {
+    challenge: 'Winter Open 2027',
+    window: 'December–March',
+    deadline: 'November 30, 2026',
+    deadlineDate: '2026-11-30T23:59:59Z',
+    release: 'March 7, 2027',
+    releaseDate: '2027-03-07T23:59:59Z',
+    status: 'Upcoming',
+  },
+  {
+    challenge: 'Spring Open 2027',
+    window: 'March–June',
+    deadline: 'February 28, 2027',
+    deadlineDate: '2027-02-28T23:59:59Z',
+    release: 'June 7, 2027',
+    releaseDate: '2027-06-07T23:59:59Z',
+    status: 'Upcoming',
+  },
+]
+
 function formatMetric(value, digits = 2) {
   return typeof value === 'number' ? value.toFixed(digits) : '-'
+}
+
+function formatCountdown(dateString) {
+  const target = Date.parse(dateString)
+  if (Number.isNaN(target)) return ''
+
+  const diff = target - Date.now()
+  if (diff <= 0) return 'closed'
+
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
+  return `${days} days left`
 }
 
 const METRIC_GROUPS = [
@@ -13,7 +63,7 @@ const METRIC_GROUPS = [
     label: 'Endpoint',
     columns: [
       { key: 'endpoint_prediction_f1', label: 'Macro-F1' },
-      { key: 'endpoint_prediction_cross_entropy', label: 'W-Acc' },
+      { key: 'endpoint_prediction_cross_entropy', label: 'Balanced Accuracy' },
     ],
   },
   {
@@ -21,7 +71,7 @@ const METRIC_GROUPS = [
     label: 'Superiority',
     columns: [
       { key: 'arm2arm_superiority_f1', label: 'Macro-F1' },
-      { key: 'arm2arm_superiority_cross_entropy', label: 'W-Acc' },
+      { key: 'arm2arm_superiority_cross_entropy', label: 'Balanced Accuracy' },
     ],
   },
   {
@@ -29,7 +79,7 @@ const METRIC_GROUPS = [
     label: 'Comparative Effect',
     columns: [
       { key: 'arm2arm_noninferiority_f1', label: 'Macro-F1' },
-      { key: 'arm2arm_noninferiority_cross_entropy', label: 'W-Acc' },
+      { key: 'arm2arm_noninferiority_cross_entropy', label: 'Balanced Accuracy' },
     ],
   },
 ]
@@ -37,6 +87,7 @@ const METRIC_GROUPS = [
 function PublishedBenchmarkTable({ benchmark, rows }) {
   const useUsernameIdentity = Number(benchmark.id) > 2
   const showHistoricalLayout = ['25-02', '25-09'].includes(benchmark.slug)
+  const displayedRows = rows
 
   return (
     <div className={`table-container ${showHistoricalLayout ? 'historical-table-shell' : ''}`}>
@@ -70,7 +121,7 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => {
+          {displayedRows.map((row, index) => {
             if (row.is_section_header) {
               return (
                 <tr key={`section-${benchmark.slug}-${index}`} className="historical-section-row">
@@ -84,7 +135,7 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
             return (
               <tr key={`${benchmark.slug}-${index}`} className={showHistoricalLayout ? 'historical-data-row' : ''}>
                 <td className={showHistoricalLayout ? 'historical-model-cell' : ''}>
-                  <strong>{useUsernameIdentity ? row.username : row.model}</strong>
+                  <strong>{useUsernameIdentity ? row.username : (showHistoricalLayout ? row.username : row.model)}</strong>
                   {!useUsernameIdentity && !showHistoricalLayout && row.username && (
                     <div className="table-subtext">{row.username}</div>
                   )}
@@ -111,26 +162,26 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
 function OpenBenchmarkPanel({ benchmark, user }) {
   return (
     <div className="open-benchmark-panel">
-      <p className="eyebrow">Current Submission Window</p>
+      <p className="eyebrow">Actively Looking for Submissions, Deadline to submit is May 31, 2026</p>
       <h2>{benchmark.display_name}</h2>
       <p>
-        We are actively seeking submissions to solve the {benchmark.display_name}. Download the
-        benchmark questions, run your pipeline, and upload a JSON file that matches the canonical
-        manifest for this release.
+        We are actively seeking submissions to participate in the Summer Open Challenge 2026.
+        Download the benchmark questions, submit your predictions for each question, and upload a
+        JSON file according to our formatting rules.
       </p>
 
       <div className="cta-row">
-        <a className="btn btn-primary" href={api.getDownloadUrl(benchmark.id)}>
+        <a className="btn btn-secondary" href={api.getDownloadUrl(benchmark.id)}>
           Download the Benchmark Questions
         </a>
-        <Link className="btn btn-secondary" to="/submit">
+        <Link className="btn btn-primary" to="/submit">
           Ready to Submit?
         </Link>
       </div>
 
       {!user && (
         <div className="callout callout-warning">
-          Please log in and submit. Open benchmarks only accept authenticated submissions.
+          Please log in and submit. We only accept submissions from authenticated users.
         </div>
       )}
 
@@ -141,7 +192,7 @@ function OpenBenchmarkPanel({ benchmark, user }) {
         </div>
       )}
 
-      {user?.email_verified && (
+      {Boolean(user?.email_verified) && (
         <div className="callout callout-success">
           Your account is verified. You can download the file above and submit through the benchmark upload flow.
         </div>
@@ -197,25 +248,71 @@ function Home({ user }) {
     <div className="page-shell">
       <section className="hero-panel">
         <div className="hero-copy">
-          <p className="eyebrow">Engineering-ready MVP</p>
-          <h1>Clinical Trial Arena</h1>
+          <h1>CT Open Challenge</h1>
           <p>
             A benchmark platform for browsing benchmark releases, downloading question sets,
             submitting JSON answers, and comparing published results across clinical-trial tasks.
           </p>
+          {content?.announcement?.items?.length > 0 && (
+            <div className="notice-board top-gap">
+              {content.announcement.items.map((item) => (
+                <div key={item.date} className="notice-line">
+                  <span className="notice-icon" aria-hidden="true">🎉</span>
+                  <div>
+                    <strong>New ({item.date}): </strong>
+                    {item.parts.map((part, index) =>
+                      part.type === 'link' ? (
+                        <a key={`${item.date}-${index}`} href={part.href}>
+                          {part.label}
+                        </a>
+                      ) : (
+                        <span key={`${item.date}-${index}`}>{part.value}</span>
+                      )
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-        <div className="hero-status">
-          <div className="status-card">
-            <strong>{benchmarks.length}</strong>
-            <span>benchmark tabs live</span>
-          </div>
-          <div className="status-card">
-            <strong>{benchmarks.filter((item) => item.is_result_published).length}</strong>
-            <span>published result cycles</span>
-          </div>
-          <div className="status-card">
-            <strong>{benchmarks.filter((item) => item.is_submission_open).length}</strong>
-            <span>open submission windows</span>
+      </section>
+
+      <section className="info-section">
+        <div className="section-header">
+          <h2>Schedule</h2>
+        </div>
+        <div className="card">
+          <div className="table-container schedule-table-shell">
+            <table className="schedule-table">
+              <thead>
+                <tr>
+                  <th>Challenge</th>
+                  <th>Window</th>
+                  <th>Submission Deadline (AOE)</th>
+                  <th>Leaderboard Release (AOE)</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SCHEDULE_ROWS.map((row) => (
+                  <tr key={row.challenge}>
+                    <td>{row.challenge}</td>
+                    <td>{row.window}</td>
+                    <td>
+                      <div>{row.deadline}</div>
+                      <small className="schedule-countdown">{formatCountdown(row.deadlineDate)}</small>
+                    </td>
+                    <td>
+                      <div>{row.release}</div>
+                      <small className="schedule-countdown">{formatCountdown(row.releaseDate)}</small>
+                    </td>
+                    <td className={row.status === 'Accepting Submissions' ? 'schedule-status-live' : 'schedule-status-upcoming'}>
+                      {row.status}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -230,7 +327,7 @@ function Home({ user }) {
               onClick={() => setActiveTab(benchmark.id)}
             >
               <span>{benchmark.display_name}</span>
-              <small>{benchmark.state.replaceAll('_', ' ')}</small>
+              {benchmark.is_result_published && <small>leaderboard</small>}
             </button>
           ))}
         </div>
@@ -239,12 +336,8 @@ function Home({ user }) {
           <div className="benchmark-panel">
             <div className="panel-header">
               <div>
-                <p className="eyebrow">Published Results</p>
-                <h2>{activeBenchmark.display_name}</h2>
+                <h2>{activeBenchmark.display_name} Leaderboard</h2>
               </div>
-              <p className="panel-description">
-                Historical benchmark results remain view-only and follow the published benchmark report layout.
-              </p>
             </div>
             <PublishedBenchmarkTable benchmark={activeBenchmark} rows={leaderboards[activeBenchmark.id]?.leaderboard || []} />
           </div>
@@ -259,29 +352,24 @@ function Home({ user }) {
         <>
           <section className="info-section">
             <div className="section-header">
-              <p className="eyebrow">Introduction</p>
               <h2>{content.introduction.title}</h2>
             </div>
-            <div className="intro-grid">
-              <div className="card prose-card">
-                {content.introduction.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
+            <div className="card prose-card">
+              <p>{content.introduction.paragraphs.join(' ')}</p>
+              {content.introduction.links
+                .filter((link) => /report|pdf/i.test(link.label))
+                .map((link) => (
+                  <div key={link.label} className="button-row top-gap">
+                    <a className="btn btn-secondary" href={link.href}>
+                      {link.label}
+                    </a>
+                  </div>
                 ))}
-              </div>
-              <div className="card link-card">
-                <p className="mini-title">Resources</p>
-                {content.introduction.links.map((link) => (
-                  <a key={link.label} className="resource-link" href={link.href}>
-                    {link.label}
-                  </a>
-                ))}
-              </div>
             </div>
           </section>
 
           <section className="info-section">
             <div className="section-header">
-              <p className="eyebrow">Support</p>
               <h2>Frequently Asked Questions</h2>
             </div>
             <FaqAccordion items={content.faq} />
