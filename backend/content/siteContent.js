@@ -4,7 +4,7 @@ module.exports = {
       {
         date: 'March 31',
         parts: [
-          { type: 'text', value: 'We added two new benchmark releases and published the ' },
+          { type: 'text', value: 'We added two new benchmarks and published the ' },
           { type: 'link', label: 'Winter 2025 Leaderboard', href: '#' },
           { type: 'text', value: ' and ' },
           { type: 'link', label: 'Summer 2025 Leaderboard', href: '#' },

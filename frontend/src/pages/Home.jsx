@@ -11,7 +11,7 @@ const SCHEDULE_ROWS = [
     deadlineDate: '2026-05-31T23:59:59Z',
     release: 'September 7, 2026',
     releaseDate: '2026-09-07T23:59:59Z',
-    status: 'Accepting Submissions',
+    status: 'Accepting Submission',
   },
   {
     challenge: 'Fall Open 2026',
@@ -46,15 +46,21 @@ function formatMetric(value, digits = 2) {
   return typeof value === 'number' ? value.toFixed(digits) : '-'
 }
 
-function formatCountdown(dateString) {
+function formatLongCountdown(dateString) {
   const target = Date.parse(dateString)
   if (Number.isNaN(target)) return ''
 
   const diff = target - Date.now()
-  if (diff <= 0) return 'closed'
+  if (diff <= 0) return '00 weeks 00 days 00:00:00'
 
-  const days = Math.ceil(diff / (1000 * 60 * 60 * 24))
-  return `${days} days left`
+  const totalSeconds = Math.floor(diff / 1000)
+  const weeks = Math.floor(totalSeconds / (7 * 24 * 60 * 60))
+  const days = Math.floor((totalSeconds % (7 * 24 * 60 * 60)) / (24 * 60 * 60))
+  const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60))
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60)
+  const seconds = totalSeconds % 60
+
+  return `${String(weeks).padStart(2, '0')} weeks ${String(days).padStart(2, '0')} days ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
 const METRIC_GROUPS = [
@@ -88,6 +94,19 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
   const useUsernameIdentity = Number(benchmark.id) > 2
   const showHistoricalLayout = ['25-02', '25-09'].includes(benchmark.slug)
   const displayedRows = rows
+  const showContaminationNote = showHistoricalLayout
+
+  function renderModelLabel(row) {
+    const label = useUsernameIdentity ? row.username : (showHistoricalLayout ? row.username : row.model)
+    const flaggedModel = ['Claude Opus 4.5', 'Claude Opus 4.5 + RAG'].includes(row.username)
+
+    return (
+      <>
+        <strong>{label}</strong>
+        {flaggedModel && <span className="contamination-flag" aria-label="Potential contamination">!</span>}
+      </>
+    )
+  }
 
   return (
     <div className={`table-container ${showHistoricalLayout ? 'historical-table-shell' : ''}`}>
@@ -135,7 +154,7 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
             return (
               <tr key={`${benchmark.slug}-${index}`} className={showHistoricalLayout ? 'historical-data-row' : ''}>
                 <td className={showHistoricalLayout ? 'historical-model-cell' : ''}>
-                  <strong>{useUsernameIdentity ? row.username : (showHistoricalLayout ? row.username : row.model)}</strong>
+                  {renderModelLabel(row)}
                   {!useUsernameIdentity && !showHistoricalLayout && row.username && (
                     <div className="table-subtext">{row.username}</div>
                   )}
@@ -155,6 +174,12 @@ function PublishedBenchmarkTable({ benchmark, rows }) {
           })}
         </tbody>
       </table>
+      {showContaminationNote && (
+        <div className="historical-note">
+          <span className="contamination-flag" aria-hidden="true">!</span>{' '}
+          Results marked with an asterisk may be contaminated because these model variants were released after the historical submission cutoff, so their training data or system updates may have included knowledge of trial outcomes that were not available to participants at submission time.
+        </div>
+      )}
     </div>
   )
 }
@@ -208,6 +233,7 @@ function Home({ user }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState(null)
+  const [now, setNow] = useState(Date.now())
 
   useEffect(() => {
     async function load() {
@@ -236,6 +262,11 @@ function Home({ user }) {
     load()
   }, [])
 
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
   const activeBenchmark = useMemo(
     () => benchmarks.find((item) => item.id === activeTab) || benchmarks[0],
     [benchmarks, activeTab]
@@ -250,8 +281,7 @@ function Home({ user }) {
         <div className="hero-copy">
           <h1>CT Open Challenge</h1>
           <p>
-            A benchmark platform for browsing benchmark releases, downloading question sets,
-            submitting JSON answers, and comparing published results across clinical-trial tasks.
+            An Open-Access, Uncontaminated, Live Platform for the Open Challenge of Clinical Trial Outcome Prediction.
           </p>
           {content?.announcement?.items?.length > 0 && (
             <div className="notice-board top-gap">
@@ -300,14 +330,19 @@ function Home({ user }) {
                     <td>{row.window}</td>
                     <td>
                       <div>{row.deadline}</div>
-                      <small className="schedule-countdown">{formatCountdown(row.deadlineDate)}</small>
+                      {row.challenge === 'Summer Open 2026' && (
+                        <small className="schedule-countdown">
+                          {formatLongCountdown(row.deadlineDate, now)}
+                        </small>
+                      )}
                     </td>
                     <td>
                       <div>{row.release}</div>
-                      <small className="schedule-countdown">{formatCountdown(row.releaseDate)}</small>
                     </td>
-                    <td className={row.status === 'Accepting Submissions' ? 'schedule-status-live' : 'schedule-status-upcoming'}>
-                      {row.status}
+                    <td>
+                      <span className={row.status === 'Accepting Submission' ? 'schedule-status-live' : 'schedule-status-upcoming'}>
+                        {row.status}
+                      </span>
                     </td>
                   </tr>
                 ))}
