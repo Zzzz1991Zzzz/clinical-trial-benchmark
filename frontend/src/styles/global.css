@@ -25,8 +25,7 @@ html {
 
 body {
   margin: 0;
-  /*font-family: Georgia, 'Times New Roman', serif;*/
-  font-family: Verdana, Geneva, sans-serif;
+  font-family: Georgia, 'Times New Roman', serif;
   color: var(--ink);
   background:
     radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 28%),
